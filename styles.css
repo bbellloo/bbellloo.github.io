@@ -1,0 +1,87 @@
+/* styles.css */
+
+/* 基本設置 */
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f8f9fa;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* 標題樣式 */
+#title {
+  display: none;
+  font-size: 3rem;
+  text-align: center;
+  margin-top: 20px;
+  color: #dc3545;
+}
+
+/* 地圖樣式 */
+#map {
+  display: none;
+  width: 100%;
+  height: auto;
+  margin: 20px 0;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+}
+
+/* 行政區樣式 */
+.district {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #007bff;
+  margin: 10px 0;
+  padding: 5px;
+  display: inline-block;
+}
+
+.district:hover {
+  color: #0056b3;
+}
+
+/* 美食列表樣式 */
+.food-list {
+  display: none;
+  margin: 20px 0;
+}
+
+.food-list h3 {
+  margin-bottom: 10px;
+  color: #28a745;
+}
+
+.food {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #17a2b8;
+  margin: 5px 0;
+  padding: 5px;
+  display: inline-block;
+}
+
+.food:hover {
+  color: #117a8b;
+}
+
+/* 美食介紹樣式 */
+#food-intro {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+#food-title {
+  font-size: 2rem;
+  color: #6c757d;
+}
+
+#food-description {
+  font-size: 1.2rem;
+  margin-top: 10px;
+}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台灣美食介紹</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* 基本設置 */
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background-color: #f8f9fa;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 標題樣式 */
+    #title {
+      display: none;
+      font-size: 3rem;
+      text-align: center;
+      margin-top: 20px;
+      color: #dc3545;
+    }
+
+    /* 地圖樣式 */
+    #map {
+      display: none;
+      width: 100%;
+      height: auto;
+      margin: 20px 0;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+
+    /* 行政區樣式 */
+    .district {
+      cursor: pointer;
+      text-decoration: underline;
+      color: #007bff;
+      margin: 10px 0;
+      padding: 5px;
+      display: inline-block;
+    }
+
+    .district:hover {
+      color: #0056b3;
+    }
+
+    /* 美食列表樣式 */
+    .food-list {
+      display: none;
+      margin: 20px 0;
+    }
+
+    .food-list h3 {
+      margin-bottom: 10px;
+      color: #28a745;
+    }
+
+    .food {
+      cursor: pointer;
+      text-decoration: underline;
+      color: #17a2b8;
+      margin: 5px 0;
+      padding: 5px;
+      display: inline-block;
+    }
+
+    .food:hover {
+      color: #117a8b;
+    }
+
+    /* 美食介紹樣式 */
+    #food-intro {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #fff;
+    }
+
+    #food-title {
+      font-size: 2rem;
+      color: #6c757d;
+    }
+
+    #food-description {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="title">台灣美食介紹</h1>
+    <img id="map" src="https://i.postimg.cc/44pm295C/image.png" alt="台灣地圖">
+    
+    <div id="districts">
+      <p class="district" data-district="taipei">台北市</p>
+      <p class="district" data-district="newtaipei">新北市</p>
+      <p class="district" data-district="taichung">台中市</p>
+      <p class="district" data-district="tainan">台南市</p>
+      <p class="district" data-district="kaohsiung">高雄市</p>
+      <p class="district" data-district="keelung">基隆市</p>
+      <p class="district" data-district="hsinchu">新竹市</p>
+      <p class="district" data-district="chiayi">嘉義市</p>
+      <!-- 添加其他行政區 -->
+    </div>
+    
+    <div id="food-list-taipei" class="food-list">
+      <h3>台北市的美食</h3>
+      <p class="food" data-food="xiaolongbao">小籠包</p>
+      <p class="food" data-food="mangoshavedice">芒果冰</p>
+    </div>
+    
+    <div id="food-list-newtaipei" class="food-list">
+      <h3>新北市的美食</h3>
+      <p class="food" data-food="ruyifang">瑞芳老街豆腐</p>
+      <p class="food" data-food="jiufen">九份芋圓</p>
+    </div>
+
+    <div id="food-list-taichung" class="food-list">
+      <h3>台中市的美食</h3>
+      <p class="food" data-food="sunbiscuit">太陽餅</p>
+      <p class="food" data-food="milktea">珍珠奶茶</p>
+    </div>
+    
+    <div id="food-list-tainan" class="food-list">
+      <h3>台南市的美食</h3>
+      <p class="food" data-food="coffinbread">棺材板</p>
+      <p class="food" data-food="danzaimian">擔仔麵</p>
+    </div>
+
+    <div id="food-list-kaohsiung" class="food-list">
+      <h3>高雄市的美食</h3>
+      <p class="food" data-food="seafood">海鮮</p>
+      <p class="food" data-food="papaya">木瓜牛奶</p>
+    </div>
+
+    <div id="food-list-keelung" class="food-list">
+      <h3>基隆市的美食</h3>
+      <p class="food" data-food="tempura">基隆甜不辣</p>
+      <p class="food" data-food="nightmarket">廟口夜市</p>
+    </div>
+
+    <div id="food-list-hsinchu" class="food-list">
+      <h3>新竹市的美食</h3>
+      <p class="food" data-food="rice-noodles">新竹米粉</p>
+      <p class="food" data-food="pork-ball">貢丸湯</p>
+    </div>
+
+    <div id="food-list-chiayi" class="food-list">
+      <h3>嘉義市的美食</h3>
+      <p class="food" data-food="chicken-rice">雞肉飯</p>
+      <p class="food" data-food="turkey-rice">火雞肉飯</p>
+    </div>
+    
+    <div id="food-intro">
+      <h3 id="food-title"></h3>
+      <p id="food-description"></p>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // 彈出標題
+      gsap.fromTo("#title", { display: 'none', opacity: 0 }, { display: 'block', opacity: 1, duration: 1 });
+
+      // 彈出地圖
+      gsap.fromTo("#map", { display: 'none', opacity: 0 }, { display: 'block', opacity: 1, duration: 1, delay: 1 });
+
+      // 點擊行政區，顯示對應的美食列表
+      $(".district").click(function() {
+        $(".food-list").hide();
+        var district = $(this).data("district");
+        $("#food-list-" + district).fadeIn();
+      });
+
+      // 點擊美食，顯示對應的介紹文
+      $(".food").click(function() {
+        var food = $(this).data("food");
+        var foodTitle, foodDescription;
+
+        switch(food) {
+          case "xiaolongbao":
+            foodTitle = "小籠包";
+            foodDescription = "小籠包是一種小巧可愛的包子，以多汁的內餡聞名。";
+            break;
+          case "mangoshavedice":
+            foodTitle = "芒果冰";
+            foodDescription = "芒果冰是一種受歡迎的夏季甜點，由新鮮的芒果和刨冰製成。";
+            break;
+          case "ruyifang":
+            foodTitle = "瑞芳老街豆腐";
+            foodDescription = "瑞芳老街的豆腐因其獨特的風味和口感而受歡迎。";
+            break;
+          case "jiufen":
+            foodTitle = "九份芋圓";
+            foodDescription = "九份的芋圓Q彈可口，是當地的特色甜點。";
+            break;
+          case "sunbiscuit":
+            foodTitle = "太陽餅";
+            foodDescription = "太陽餅是台中的名產，酥脆甜美。";
+            break;
+          case "milktea":
+            foodTitle = "珍珠奶茶";
+            foodDescription = "珍珠奶茶是台灣的招牌飲品，風靡全球。";
+            break;
+          case "coffinbread":
+            foodTitle = "棺材板";
+            foodDescription = "棺材板是一道台南特色小吃，外脆內軟，內餡豐富。";
+            break;
+          case "danzaimian":
+            foodTitle = "擔仔麵";
+            foodDescription = "擔仔麵是台南的經典美食，以細麵和濃郁的肉燥湯頭聞名。";
+            break;
+          case "seafood":
+            foodTitle = "海鮮";
+            foodDescription = "高雄靠海，海鮮新鮮美味，種類繁多。";
+            break;
+          case "papaya":
+            foodTitle = "木瓜牛奶";
+            foodDescription = "高雄的木瓜牛奶香甜濃郁，是當地的特色飲品。";
+            break;
+          case "tempura":
+            foodTitle = "基隆甜不辣";
+            foodDescription = "基隆甜不辣口感獨特，風味絕佳，是當地的著名小吃。";
+            break;
+          case "nightmarket":
+            foodTitle = "廟口夜市";
+            foodDescription = "基隆廟口夜市是當地的著名景點，聚集了各式各樣的美食。";
+            break;
+          case "rice-noodles":
+            foodTitle = "新竹米粉";
+            foodDescription = "新竹米粉細緻Q彈，口感獨特，是新竹的代表性美食。";
+            break;
+          case "pork-ball":
+            foodTitle = "貢丸湯";
+            foodDescription = "新竹的貢丸湯鮮美可口，肉質細膩。";
+            break;
+          case "chicken-rice":
+            foodTitle = "雞肉飯";
+            foodDescription = "嘉義的雞肉飯以嫩滑的雞肉和香濃的米飯聞名。";
+            break;
+          case "turkey-rice":
+            foodTitle = "火雞肉飯";
+            foodDescription = "嘉義的火雞肉飯風味獨特，深受食客喜愛。";
+            break;
+          // 添加更多食物介紹
+          default:
+            foodTitle = "";
+            foodDescription = "";
+        }
+
+        $("#food-title").text(foodTitle);
+        $("#food-description").text(foodDescription);
+        gsap.fromTo("#food-intro", { opacity: 0 }, { opacity: 1, duration: 1 });
+      });
+    });
+  </script>
+</body>
+</html>
