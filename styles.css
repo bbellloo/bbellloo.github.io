@@ -19,24 +19,27 @@ body {
   color: #dc3545;
 }
 
-/* 地圖樣式 */
-#map {
-  display: none;
+/* 地圖容器樣式 */
+#map-container {
+  position: relative;
   width: 100%;
-  height: auto;
-  margin: 20px 0;
+  max-width: 600px;
+  margin: 20px auto;
   border: 2px solid #ccc;
   border-radius: 10px;
 }
 
+#map {
+  width: 100%;
+  height: auto;
+}
+
 /* 行政區樣式 */
 .district {
+  position: absolute;
   cursor: pointer;
   text-decoration: underline;
   color: #007bff;
-  margin: 10px 0;
-  padding: 5px;
-  display: inline-block;
 }
 
 .district:hover {
