@@ -1,0 +1,53 @@
+body {
+    display: flex;
+    position: relative;
+    top: 80%; 
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-image: url('https://cdn.discordapp.com/attachments/1105202386240282705/1105930840313180260/3_.png?ex=66a4999b&is=66a3481b&hm=872eeb6fa3586f71c92617bd0ecfc0d240255f420a765641bd1910d22cd20608&');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.header img {
+    max-width: 50%;
+    position: relative;
+    top: 10%; right: 2%;
+    height: auto;
+    margin-bottom: 10px; /* 減少標題圖片與格子之間的空間 */
+}
+.container {
+    display: grid;
+    position: relative;
+    top: 1%; left: 2%;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 10px; /* 減少格子之間的空間 */
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+}
+.lottery-item {
+    cursor: pointer;
+}
+img {
+    max-width: 65%;
+    height: 100%;
+    border-radius: 1px;
+}
+.hidden {
+    display: none;
+}
+.logo {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+}
+.logo img {
+    width: 250px; /* 調整 logo 的大小 */
+    height: auto;
+}
