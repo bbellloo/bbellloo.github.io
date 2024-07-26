@@ -1,96 +1,46 @@
-/* styles.css */
-
-/* 基本設置 */
 body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-  background-color: #f8f9fa;
-  color: #333;
-  margin: 0;
-  padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-image: url('https://i.postimg.cc/Gmsqb763/image.png');
+    background-size: cover;
+    background-position: center;
 }
-
-/* 標題樣式 */
-#title {
-  display: none;
-  font-size: 3rem;
-  text-align: center;
-  margin-top: 20px;
-  color: #dc3545;
+.header img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 10px; /* 減少標題圖片與格子之間的空間 */
 }
-
-/* 地圖容器樣式 */
-#map-container {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  margin: 20px auto;
-  border: 2px solid #ccc;
-  border-radius: 10px;
+.container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 5px; /* 減少格子之間的空間 */
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
 }
-
-#map {
-  width: 100%;
-  height: auto;
+.lottery-item {
+    cursor: pointer;
 }
-
-/* 行政區樣式 */
-.district {
-  position: absolute;
-  cursor: pointer;
-  text-decoration: underline;
-  color: white; /* 設置行政區文字顏色為白色 */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
 }
-
-.district:hover {
-  color: #ccc; /* 設置懸停時的顏色 */
+.hidden {
+    display: none;
 }
-
-/* 台北市和基隆市的直式樣式 */
-.district.vertical {
-  writing-mode: vertical-rl;
-  text-align: center;
+.logo {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
 }
-
-/* 美食列表樣式 */
-.food-list {
-  display: none;
-  margin: 20px 0;
-}
-
-.food-list h3 {
-  margin-bottom: 10px;
-  color: #28a745;
-}
-
-.food {
-  cursor: pointer;
-  text-decoration: underline;
-  color: #17a2b8;
-  margin: 5px 0;
-  padding: 5px;
-  display: inline-block;
-}
-
-.food:hover {
-  color: #117a8b;
-}
-
-/* 美食介紹樣式 */
-#food-intro {
-  margin-top: 30px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background-color: #fff;
-}
-
-#food-title {
-  font-size: 2rem;
-  color: #6c757d;
-}
-
-#food-description {
-  font-size: 1.2rem;
-  margin-top: 10px;
+.logo img {
+    width: 150px; /* 調整 logo 的大小 */
+    height: auto;
 }
