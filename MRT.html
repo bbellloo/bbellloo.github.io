@@ -1,0 +1,1813 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣大富翁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #84c2d4 0%, #84c2d4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        
+        .game-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 玩家設定畫面 */
+        .setup-screen {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 800px;
+        }
+        
+        .setup-screen h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .player-count-selection {
+            margin: 30px 0;
+        }
+        
+        .count-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+        
+        .count-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .count-btn.selected {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        
+        .player-setup {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        /* 4人時使用網格佈局 */
+        .player-setup.four-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .player-setup.four-grid .player-config {
+            margin: 0;
+        }
+        
+        .player-config {
+            background: rgba(0,0,0,0.05);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+        }
+        
+        .nickname-input {
+            width: 200px;
+            padding: 10px;
+            margin: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .avatar-selection {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .avatar-option.selected {
+            border-color: #e74c3c;
+            transform: scale(1.2);
+        }
+        
+        .avatar-option.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* 開始畫面 */
+        .start-screen {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .start-btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* 抽卡畫面 */
+        .draw-screen {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .player-turn {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            width: 120px;
+            height: 180px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .card-back {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            font-size: 48px;
+        }
+        
+        .card-front {
+            background: linear-gradient(45deg, #ff9a9e, #fecfef);
+            color: #333;
+            transform: rotateY(180deg);
+            font-size: 16px;
+            position: relative;
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        /* 遊戲主畫面 */
+        .game-board {
+            display: none;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        
+        .board {
+            width: 1000px;
+            height: 800px;
+            background: url('https://i.postimg.cc/YSJVxpSt/Daydream-2.png') no-repeat center center;
+            background-size: contain;
+            position: relative;
+            flex-shrink: 0;
+            margin: 0 auto;
+        }
+        
+        .city {
+            position: absolute;
+            width: 45px;
+            height: 35px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #333;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .city:hover {
+            background: rgba(255,255,255,1);
+            transform: scale(1.1);
+            z-index: 5;
+        }
+        
+        .city.owned.player1 {
+            background: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+        }
+        
+        .city.owned.player2 {
+            background: #3498db !important;
+            color: white !important;
+            border-color: #2980b9 !important;
+        }
+        
+        .city.owned.player3 {
+            background: #2ecc71 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
+        }
+        
+        .city.owned.player4 {
+            background: #9b59b6 !important;
+            color: white !important;
+            border-color: #8e44ad !important;
+        }
+        
+        .city.destination {
+            border-color: #f39c12 !important;
+            background: rgba(243, 156, 18, 0.3);
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        .city.destination.owned.player1 {
+            background: #e74c3c !important;
+            color: white !important;
+            border-color: #f39c12 !important;
+        }
+        
+        .city.destination.owned.player2 {
+            background: #3498db !important;
+            color: white !important;
+            border-color: #f39c12 !important;
+        }
+        
+        .city.destination.owned.player3 {
+            background: #2ecc71 !important;
+            color: white !important;
+            border-color: #f39c12 !important;
+        }
+        
+        .city.destination.owned.player4 {
+            background: #9b59b6 !important;
+            color: white !important;
+            border-color: #f39c12 !important;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 15px rgba(243, 156, 18, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(243, 156, 18, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(243, 156, 18, 0.5); }
+        }
+        
+        .player {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            z-index: 10;
+            transition: all 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* 玩家信息區 - 預設排列 */
+        .players-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        /* 3人以上使用4宮格佈局 */
+        .players-info.four-grid {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            right: 20px;
+            bottom: 200px;
+            display: grid;
+            grid-template-columns: 200px 1fr 1fr 200px;
+            grid-template-rows: 1fr 1fr;
+            grid-template-areas: 
+                "player1 . . player2"
+                "player3 . . player4";
+            gap: 20px;
+            z-index: 100;
+        }
+        
+        .players-info.four-grid .player-info:nth-child(1) {
+            grid-area: player1;
+        }
+        
+        .players-info.four-grid .player-info:nth-child(2) {
+            grid-area: player2;
+        }
+        
+        .players-info.four-grid .player-info:nth-child(3) {
+            grid-area: player3;
+        }
+        
+        .players-info.four-grid .player-info:nth-child(4) {
+            grid-area: player4;
+        }
+        
+        .player-info {
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 15px;
+            width: 180px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .player-info h3 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .player-info.current-turn h3 {
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            border: 2px solid #ffd700;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            font-size: 12px;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .info-value {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .player-status {
+            text-align: center;
+            font-weight: bold;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+        
+        .player-status.playing {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .player-status.finished {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+        }
+        
+        .player-status.bankrupt {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        /* 控制區域 - 相對於玩家UI定位 */
+        .controls {
+            position: absolute;
+            text-align: center;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            width: 180px;
+            transition: all 0.3s ease;
+        }
+        
+        /* 2人遊戲定位 */
+        .controls.player1-turn {
+            top: 120px;
+            left: 220px; /* 在玩家1 UI右側 */
+        }
+        
+        .controls.player2-turn {
+            top: 120px;
+            right: 220px; /* 在玩家2 UI左側 */
+        }
+        
+        /* 3-4人遊戲定位 */
+        .controls.player3-turn {
+            bottom: 120px;
+            left: 220px; /* 在玩家3 UI右側 */
+        }
+        
+        .controls.player4-turn {
+            bottom: 120px;
+            right: 220px; /* 在玩家4 UI左側 */
+        }
+        .dice-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .dice-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .dice-rolling {
+            animation: diceRoll 1.5s ease-out;
+        }
+        
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.2); }
+            50% { transform: rotate(180deg) scale(0.8); }
+            75% { transform: rotate(270deg) scale(1.3); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .dice-result {
+            animation: diceResult 0.5s ease-out;
+        }
+        
+        @keyframes diceResult {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.3); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .dice-glow {
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.8), 0 0 40px rgba(52, 152, 219, 0.4);
+        }
+        
+        .dice-btn, .action-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .dice-btn:hover, .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .dice-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 模態對話框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .ranking-screen {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        
+        .rank-number {
+            font-size: 24px;
+            font-weight: bold;
+            width: 40px;
+        }
+        
+        .rank-player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .rank-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 2px solid white;
+        }
+        
+        .rank-status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .board {
+                width: 800px;
+                height: 640px;
+            }
+            
+            .players-info {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .player-info {
+                width: 160px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 800px) {
+            .board {
+                width: 600px;
+                height: 480px;
+            }
+            
+            .city {
+                width: 35px;
+                height: 26px;
+                font-size: 6px;
+            }
+            
+            .player {
+                width: 16px;
+                height: 16px;
+                font-size: 12px;
+            }
+            
+            .player-info {
+                width: 140px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 玩家設定畫面 -->
+        <div class="setup-screen" id="setupScreen">
+            <h2>遊戲設定</h2>
+            
+            <div class="player-count-selection">
+                <h3>選擇遊戲人數：</h3>
+                <button class="count-btn" onclick="selectPlayerCount(2)">2人</button>
+                <button class="count-btn" onclick="selectPlayerCount(3)">3人</button>
+                <button class="count-btn" onclick="selectPlayerCount(4)">4人</button>
+            </div>
+            
+            <div class="player-setup" id="playerSetup">
+                <!-- 玩家設定將動態生成 -->
+            </div>
+            
+            <button class="start-btn" id="startGameBtn" onclick="startGameSetup()" style="display: none;">開始遊戲</button>
+        </div>
+        
+        <!-- 抽卡畫面 -->
+        <div class="draw-screen" id="drawScreen">
+            <h2 class="player-turn" id="playerTurn">玩家1請翻開您的目的地卡片</h2>
+            <div class="card-container" id="cardContainer">
+                <!-- 卡片將動態生成 -->
+            </div>
+        </div>
+        
+        <!-- 遊戲主畫面 -->
+        <div class="game-board" id="gameBoard">
+            <!-- 玩家信息區 -->
+            <div class="players-info" id="playersInfo">
+                <!-- 玩家信息將動態生成 -->
+            </div>
+            
+            <!-- 遊戲棋盤 -->
+            <div class="board" id="board">
+                <!-- 城市將動態生成 -->
+            </div>
+            
+            <!-- 控制區域 -->
+            <div class="controls player1-turn" id="controls">
+                <div style="margin-bottom: 10px;">
+                    <strong>當前玩家:</strong>
+                    <div id="currentPlayerName" style="font-size: 16px; margin: 5px 0;">玩家1</div>
+                </div>
+                <div class="dice-container">
+                    <img id="diceImg" class="dice-img" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='50' cy='50' r='8' fill='%23333'/></svg>">
+                    <button class="dice-btn" id="rollDiceBtn" onclick="rollDice()">擲骰子</button>
+                </div>
+                <div id="gameMessage" style="margin-top: 10px; min-height: 20px; font-weight: bold; font-size: 12px;"></div>
+            </div>
+        </div>
+        
+        <!-- 排行榜畫面 -->
+        <div class="ranking-screen" id="rankingScreen">
+            <h2>🏆 遊戲結束 - 最終排名</h2>
+            <div id="rankingList">
+                <!-- 排名將動態生成 -->
+            </div>
+            <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">重新開始</button>
+        </div>
+    </div>
+    
+    <!-- 模態對話框 -->
+    <div id="modal" class="modal">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modalTitle">標題</h3>
+            <p id="modalContent">內容</p>
+            <div id="modalButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態 - 添加暫停回合系統
+        let gameState = {
+            playerCount: 2,
+            currentPlayer: 1,
+            players: {},
+            gamePhase: 'setup',
+            drawingPlayer: 1,
+            clockwise: true,
+            isRolling: false,
+            gameFinished: false,
+            finishOrder: [],
+            bankruptOrder: [],
+            skipNextTurn: null // 記錄下一個要跳過的玩家
+        };
+        
+        // 頭像選項
+        const avatarOptions = [
+            { type: 'emoji', value: '😀', color: '#ffeb3b' },
+            { type: 'emoji', value: '😎', color: '#ff9800' },
+            { type: 'emoji', value: '🤔', color: '#2196f3' },
+            { type: 'emoji', value: '😊', color: '#4caf50' },
+            { type: 'emoji', value: '🔥', color: '#f44336' },
+            { type: 'emoji', value: '⭐', color: '#9c27b0' },
+            { type: 'emoji', value: '🎯', color: '#e91e63' },
+            { type: 'emoji', value: '🏆', color: '#ff5722' }
+        ];
+        
+        const playerColors = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+        
+        // 正確的順行路線
+        const boardLayout = [
+            { name: '台北', type: 'start', price: 0 },
+            { name: '新北', type: 'city', price: 2000 },
+            { name: '桃園', type: 'city', price: 2200 },
+            { name: '機會', type: 'chance' },
+            { name: '新竹', type: 'city', price: 2100 },
+            { name: '苗栗', type: 'city', price: 1500 },
+            { name: '台中', type: 'city', price: 2400 },
+            { name: '命運', type: 'fate' },
+            { name: '彰化', type: 'city', price: 1700 },
+            { name: '雲林', type: 'city', price: 1400 },
+            { name: '嘉義', type: 'city', price: 1600 },
+            { name: '台南', type: 'city', price: 2300 },
+            { name: '高雄', type: 'city', price: 2500 },
+            { name: '屏東', type: 'city', price: 1900 },
+            { name: '命運', type: 'fate' },
+            { name: '台東', type: 'city', price: 2000 },
+            { name: '機會', type: 'chance' },
+            { name: '花蓮', type: 'city', price: 2200 },
+            { name: '命運', type: 'fate' },
+            { name: '宜蘭', type: 'city', price: 1800 },
+            { name: '機會', type: 'chance' },
+            { name: '基隆', type: 'city', price: 1500 }
+        ];
+        
+        const destinations = [
+            '新北', '桃園', '新竹', '苗栗', '台中', '彰化', '雲林', '嘉義', 
+            '台南', '高雄', '屏東', '台東', '花蓮', '宜蘭', '基隆'
+        ];
+        
+        const cityImages = {
+            '新北': 'https://i.postimg.cc/Kz818Nmg/1.png',
+            '桃園': 'https://i.postimg.cc/g23XSjgf/3.png',
+            '新竹': 'https://i.postimg.cc/Qdc94Cfv/4.png',
+            '苗栗': 'https://i.postimg.cc/g23XSjg5/5.png',
+            '台中': 'https://i.postimg.cc/Sxc2TRgB/6.png',
+            '彰化': 'https://i.postimg.cc/6pC2jqH6/7.png',
+            '雲林': 'https://i.postimg.cc/0Nx6Lv3d/8.png',
+            '嘉義': 'https://i.postimg.cc/YSk4J7Vn/9.png',
+            '台南': 'https://i.postimg.cc/TP9yxSMt/10.png',
+            '高雄': 'https://i.postimg.cc/xdRkQ7Ds/11.png',
+            '屏東': 'https://i.postimg.cc/s2cBz8Cr/12.png',
+            '台東': 'https://i.postimg.cc/85z7zHT7/15.png',
+            '花蓮': 'https://i.postimg.cc/G2m4mQbh/14.png',
+            '宜蘭': 'https://i.postimg.cc/76Z5ZVqv/13.png',
+            '基隆': 'https://i.postimg.cc/rFBRNxNn/2.png'
+        };
+        
+        const diceImages = {
+            1: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='50' cy='50' r='8' fill='%23333'/></svg>",
+            2: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='25' cy='25' r='6' fill='%23333'/><circle cx='75' cy='75' r='6' fill='%23333'/></svg>",
+            3: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='25' cy='25' r='6' fill='%23333'/><circle cx='50' cy='50' r='6' fill='%23333'/><circle cx='75' cy='75' r='6' fill='%23333'/></svg>",
+            4: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='25' cy='25' r='6' fill='%23333'/><circle cx='75' cy='25' r='6' fill='%23333'/><circle cx='25' cy='75' r='6' fill='%23333'/><circle cx='75' cy='75' r='6' fill='%23333'/></svg>",
+            5: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='25' cy='25' r='6' fill='%23333'/><circle cx='75' cy='25' r='6' fill='%23333'/><circle cx='50' cy='50' r='6' fill='%23333'/><circle cx='25' cy='75' r='6' fill='%23333'/><circle cx='75' cy='75' r='6' fill='%23333'/></svg>",
+            6: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff' stroke='%23333' stroke-width='2' rx='10'/><circle cx='25' cy='20' r='6' fill='%23333'/><circle cx='75' cy='20' r='6' fill='%23333'/><circle cx='25' cy='50' r='6' fill='%23333'/><circle cx='75' cy='50' r='6' fill='%23333'/><circle cx='25' cy='80' r='6' fill='%23333'/><circle cx='75' cy='80' r='6' fill='%23333'/></svg>"
+        };
+        
+        // 音效URL
+        const soundEffects = {
+            correct: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // 答對音效
+            incorrect: 'https://www.soundjay.com/misc/sounds/fail-buzzer-02.wav' // 答錯音效
+        };
+        
+        // 播放音效函數
+        function playSound(soundType) {
+            try {
+                const audio = new Audio(soundEffects[soundType]);
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log('無法播放音效:', e));
+            } catch (error) {
+                console.log('音效載入失敗:', error);
+            }
+        }
+        
+        const chanceQuestions = [
+            {
+                question: "台灣最高峰是哪一座山？",
+                options: ["玉山", "雪山", "合歡山", "阿里山"],
+                correct: 0,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "台灣哪個縣市沒有海岸線？",
+                options: ["南投", "嘉義", "苗栗", "新竹"],
+                correct: 0,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "日月潭位於哪個縣市？",
+                type: "yesno",
+                statement: "日月潭位於南投縣",
+                correct: true,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            }
+        ];
+        
+        const fateEvents = [
+            "倒退2格",
+            "倒退3格", 
+            "倒退4格",
+            "扣150元",
+            "增加500元",
+            "開始反方向移動",
+            "返回起點"
+        ];
+        
+        // 選擇遊戲人數
+        function selectPlayerCount(count) {
+            gameState.playerCount = count;
+            document.querySelectorAll('.count-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // 初始化玩家數據
+            gameState.players = {};
+            for (let i = 1; i <= count; i++) {
+                gameState.players[i] = {
+                    nickname: `玩家${i}`,
+                    avatar: avatarOptions[i-1],
+                    money: 10000,
+                    position: 0,
+                    destination: null,
+                    destinationIndex: -1,
+                    status: 'playing',
+                    finishTime: null,
+                    bankruptTime: null
+                };
+            }
+            
+            generatePlayerSetup();
+        }
+        
+        // 生成玩家設定界面 - 修正版
+        function generatePlayerSetup() {
+            const setupDiv = document.getElementById('playerSetup');
+            setupDiv.innerHTML = '';
+            
+            // 4人時使用網格佈局
+            if (gameState.playerCount === 4) {
+                setupDiv.className = 'player-setup four-grid';
+            } else {
+                setupDiv.className = 'player-setup';
+            }
+            
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player-config';
+                playerDiv.innerHTML = `
+                    <h4>玩家 ${i}</h4>
+                    <input type="text" class="nickname-input" placeholder="輸入暱稱" 
+                           value="玩家${i}" onchange="updatePlayerNickname(${i}, this.value)">
+                    <div class="avatar-selection" id="avatarSelection${i}">
+                        ${avatarOptions.map((avatar, index) => `
+                            <div class="avatar-option ${i === 1 && index === i-1 ? 'selected' : ''}" 
+                                 style="background: ${avatar.color}" 
+                                 onclick="selectAvatar(${i}, ${index})"
+                                 data-avatar-index="${index}">
+                                ${avatar.value}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                setupDiv.appendChild(playerDiv);
+            }
+            
+            setupDiv.style.display = 'block';
+            document.getElementById('startGameBtn').style.display = 'block';
+            updateAvatarAvailability();
+        }
+        
+        // 更新玩家暱稱
+        function updatePlayerNickname(playerId, nickname) {
+            gameState.players[playerId].nickname = nickname || `玩家${playerId}`;
+        }
+        
+        // 選擇頭像
+        function selectAvatar(playerId, avatarIndex) {
+            const avatar = avatarOptions[avatarIndex];
+            if (!avatar) return;
+            
+            // 檢查是否已被選擇
+            const isUsed = Object.values(gameState.players).some(player => 
+                player.avatar && player.avatar.value === avatar.value && 
+                gameState.players[playerId] !== player
+            );
+            
+            if (isUsed) return;
+            
+            gameState.players[playerId].avatar = avatar;
+            
+            // 更新UI
+            document.querySelectorAll(`#avatarSelection${playerId} .avatar-option`).forEach(opt => 
+                opt.classList.remove('selected')
+            );
+            document.querySelector(`#avatarSelection${playerId} .avatar-option[data-avatar-index="${avatarIndex}"]`)
+                .classList.add('selected');
+            
+            updateAvatarAvailability();
+        }
+        
+        // 更新頭像可用性
+        function updateAvatarAvailability() {
+            const usedAvatars = Object.values(gameState.players)
+                .filter(player => player.avatar)
+                .map(player => player.avatar.value);
+            
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                document.querySelectorAll(`#avatarSelection${i} .avatar-option`).forEach((opt, index) => {
+                    const avatar = avatarOptions[index];
+                    const isSelected = opt.classList.contains('selected');
+                    const isUsed = usedAvatars.includes(avatar.value);
+                    
+                    opt.classList.toggle('disabled', isUsed && !isSelected);
+                });
+            }
+        }
+        
+        // 開始遊戲設定
+        function startGameSetup() {
+            // 檢查是否所有玩家都設定完成
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                if (!gameState.players[i].avatar) {
+                    alert(`請為玩家 ${i} 選擇頭像！`);
+                    return;
+                }
+            }
+            
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('drawScreen').style.display = 'block';
+            gameState.gamePhase = 'drawing';
+            generateCards();
+        }
+        
+        function generateCards() {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = '';
+            
+            const shuffled = [...destinations].sort(() => 0.5 - Math.random());
+            const destination = shuffled[0];
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back">?</div>
+                    <div class="card-front">
+                        <img src="${cityImages[destination]}" alt="${destination}" class="card-image" 
+                             onerror="this.style.display='none';">
+                    </div>
+                </div>
+            `;
+            card.onclick = () => selectCard(card, destination);
+            container.appendChild(card);
+            
+            // 更新抽卡提示
+            const player = gameState.players[gameState.drawingPlayer];
+            document.getElementById('playerTurn').innerHTML = `
+                <span style="color: ${player.avatar.color}">${player.avatar.value}</span>
+                ${player.nickname} 請翻開您的目的地卡片
+            `;
+        }
+        
+        function selectCard(cardElement, destination) {
+            cardElement.classList.add('flipped');
+            gameState.players[gameState.drawingPlayer].destination = destination;
+            gameState.players[gameState.drawingPlayer].destinationIndex = boardLayout.findIndex(slot => slot.name === destination);
+            
+            setTimeout(() => {
+                confirmDestination();
+            }, 3000);
+        }
+        
+        function confirmDestination() {
+            if (gameState.drawingPlayer < gameState.playerCount) {
+                gameState.drawingPlayer++;
+                generateCards();
+            } else {
+                startMainGame();
+            }
+        }
+        
+        function startMainGame() {
+            document.getElementById('drawScreen').style.display = 'none';
+            document.getElementById('gameBoard').style.display = 'block';
+            gameState.gamePhase = 'playing';
+            generateBoard();
+            generatePlayersInfo();
+            updateUI();
+        }
+        
+        function generateBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            const cityPositions = [
+                {top: '13%', left: '60%'}, // 台北
+                {top: '18%', left: '58%'}, // 新北
+                {top: '18%', left: '53%'}, // 桃園
+                {top: '23%', left: '50.5%'}, // 機會
+                {top: '27.5%', left: '47.5%'}, // 新竹
+                {top: '32%', left: '44%'}, // 苗栗
+                {top: '37%', left: '41.5%'}, // 台中
+                {top: '42%', left: '38%'}, // 命運
+                {top: '48%', left: '36%'}, // 彰化
+                {top: '55%', left: '35%'}, // 雲林
+                {top: '61%', left: '36%'}, // 嘉義
+                {top: '67%', left: '37.5%'}, // 台南
+                {top: '72%', left: '44%'}, // 高雄
+                {top: '78%', left: '48%'}, // 屏東
+                {top: '69%', left: '50%'}, // 命運
+                {top: '63%', left: '54%'}, // 台東
+                {top: '57%', left: '57%'}, // 機會
+                {top: '50%', left: '60%'}, // 花蓮
+                {top: '43%', left: '62%'}, // 命運
+                {top: '32%', left: '63%'}, // 宜蘭
+                {top: '25%', left: '64.5%'}, // 機會
+                {top: '18%', left: '66.5%'}  // 基隆
+            ];
+            
+            boardLayout.forEach((slot, index) => {
+                const cityDiv = document.createElement('div');
+                cityDiv.className = 'city';
+                cityDiv.id = `city-${index}`;
+                Object.assign(cityDiv.style, cityPositions[index]);
+                
+                if (slot.type === 'start') {
+                    cityDiv.innerHTML = `<div style="font-size: 15px;">${slot.name}</div><div style="font-size: 8px;">起點</div>`;
+                    cityDiv.style.background = 'rgba(46, 204, 113, 0.8)';
+                    cityDiv.style.color = 'white';
+                } else if (slot.type === 'chance') {
+                    cityDiv.innerHTML = `<div style="font-size: 15px;">機會</div><div style="font-size: 10px;">🎲</div>`;
+                    cityDiv.style.background = 'rgba(52, 152, 219, 0.8)';
+                    cityDiv.style.color = 'white';
+                } else if (slot.type === 'fate') {
+                    cityDiv.innerHTML = `<div style="font-size: 15px;">命運</div><div style="font-size: 10px;">🔮</div>`;
+                    cityDiv.style.background = 'rgba(155, 89, 182, 0.8)';
+                    cityDiv.style.color = 'white';
+                } else {
+                    cityDiv.innerHTML = `<div style="font-size: 15px;">${slot.name}</div><div style="font-size: 8px;">${slot.price}</div>`;
+                }
+                
+                // 檢查是否為目的地
+                Object.values(gameState.players).forEach(player => {
+                    if (player.destination === slot.name) {
+                        cityDiv.classList.add('destination');
+                    }
+                });
+                
+                board.appendChild(cityDiv);
+            });
+            
+            // 創建玩家棋子
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                const player = document.createElement('div');
+                player.className = 'player';
+                player.id = `player${i}`;
+                player.style.background = gameState.players[i].avatar.color;
+                player.textContent = gameState.players[i].avatar.value;
+                board.appendChild(player);
+            }
+            
+            updatePlayerPositions();
+        }
+        
+        // 生成玩家信息 - 修正版
+        function generatePlayersInfo() {
+            const container = document.getElementById('playersInfo');
+            container.innerHTML = '';
+            
+            // 3人以上時使用4宮格佈局
+            if (gameState.playerCount >= 3) {
+                container.className = 'players-info four-grid';
+            } else {
+                container.className = 'players-info';
+            }
+            
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                const player = gameState.players[i];
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player-info';
+                playerDiv.id = `playerInfo${i}`;
+                
+                playerDiv.innerHTML = `
+                    <h3 style="background: ${player.avatar.color}; color: white;">
+                        ${player.avatar.value} ${player.nickname}
+                    </h3>
+                    <div class="info-item">
+                        <span class="info-label">💰 金錢:</span>
+                        <span class="info-value">$<span id="player${i}Money">${player.money}</span></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🎯 目的地:</span>
+                        <span class="info-value" id="player${i}Dest">${player.destination || '未選擇'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 位置:</span>
+                        <span class="info-value" id="player${i}Pos">台北</span>
+                    </div>
+                    <div class="player-status playing" id="player${i}Status">遊戲中</div>
+                `;
+                
+                container.appendChild(playerDiv);
+            }
+        }
+        
+        function updatePlayerPositions() {
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                const playerElement = document.getElementById(`player${i}`);
+                const city = document.getElementById(`city-${gameState.players[i].position}`);
+                
+                if (city && playerElement) {
+                    // 計算多個玩家在同一格的排列
+                    const playersAtSamePosition = [];
+                    for (let j = 1; j <= gameState.playerCount; j++) {
+                        if (gameState.players[j].position === gameState.players[i].position) {
+                            playersAtSamePosition.push(j);
+                        }
+                    }
+                    
+                    const playerIndex = playersAtSamePosition.indexOf(i);
+                    const totalPlayers = playersAtSamePosition.length;
+                    
+                    let offsetX = 0, offsetY = 0;
+                    if (totalPlayers > 1) {
+                        const angle = (playerIndex / totalPlayers) * 2 * Math.PI;
+                        offsetX = Math.cos(angle) * 15;
+                        offsetY = Math.sin(angle) * 15;
+                    }
+                    
+                    playerElement.style.left = (city.offsetLeft + 22 + offsetX) + 'px';
+                    playerElement.style.top = (city.offsetTop + 17 + offsetY) + 'px';
+                }
+            }
+        }
+        
+        async function rollDice() {
+            if (gameState.isRolling || gameState.gameFinished) return;
+            
+            gameState.isRolling = true;
+            const rollBtn = document.getElementById('rollDiceBtn');
+            const diceImg = document.getElementById('diceImg');
+            
+            rollBtn.disabled = true;
+            rollBtn.textContent = '擲骰中...';
+            
+            const steps = Math.floor(Math.random() * 6) + 1;
+            
+            // 開始骰子動畫
+            startDiceAnimation(diceImg);
+            
+            await sleep(1500);
+            
+            // 顯示結果
+            showDiceResult(diceImg, steps);
+            
+            await sleep(500);
+            
+            showMessage(`${gameState.players[gameState.currentPlayer].nickname} 擲出 ${steps}`);
+            
+            await sleep(300);
+            
+            // 移動玩家
+            await movePlayer(gameState.currentPlayer, steps);
+        }
+        
+        function startDiceAnimation(diceImg) {
+            diceImg.className = 'dice-img dice-rolling dice-glow';
+            
+            let frame = 0;
+            const animationInterval = setInterval(() => {
+                const randomDice = Math.floor(Math.random() * 6) + 1;
+                diceImg.src = diceImages[randomDice];
+                frame++;
+                
+                if (frame >= 15) {
+                    clearInterval(animationInterval);
+                }
+            }, 100);
+        }
+        
+        function showDiceResult(diceImg, result) {
+            diceImg.classList.remove('dice-rolling', 'dice-glow');
+            diceImg.src = diceImages[result];
+            diceImg.classList.add('dice-result');
+            
+            setTimeout(() => {
+                diceImg.classList.remove('dice-result');
+            }, 500);
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        async function movePlayer(player, steps) {
+            const totalCities = boardLayout.length;
+            let currentPos = gameState.players[player].position;
+            
+            for (let i = 0; i < Math.abs(steps); i++) {
+                await sleep(300);
+                if (steps > 0) {
+                    if (gameState.clockwise) {
+                        currentPos = (currentPos + 1) % totalCities;
+                    } else {
+                        currentPos = (currentPos - 1 + totalCities) % totalCities;
+                    }
+                } else {
+                    // 倒退邏輯
+                    if (gameState.clockwise) {
+                        currentPos = (currentPos - 1 + totalCities) % totalCities;
+                    } else {
+                        currentPos = (currentPos + 1) % totalCities;
+                    }
+                }
+                gameState.players[player].position = currentPos;
+                updatePlayerPositions();
+            }
+            
+            handleCityEvent(player, currentPos);
+        }
+        
+        function handleCityEvent(player, position) {
+            const currentSlot = boardLayout[position];
+            
+            if (currentSlot.type === 'start') {
+                gameState.players[player].money += 2000;
+                showMessage(`${gameState.players[player].nickname} 經過起點，獲得 $2000！`);
+            } else if (currentSlot.type === 'chance') {
+                handleChance(player);
+                return;
+            } else if (currentSlot.type === 'fate') {
+                handleFate(player);
+                return;
+            } else if (currentSlot.type === 'city') {
+                if (gameState.players[player].destination === currentSlot.name) {
+                    gameState.players[player].money += 5000;
+                    gameState.players[player].status = 'finished';
+                    gameState.players[player].finishTime = Date.now();
+                    gameState.finishOrder.push(player);
+                    
+                    showMessage(`🎉 ${gameState.players[player].nickname} 抵達目的地 ${currentSlot.name}！獲得 $5000！`);
+                    
+                    checkGameEnd();
+                    if (!gameState.gameFinished) {
+                        nextTurn();
+                    }
+                    return;
+                }
+                
+                const cityElement = document.getElementById(`city-${position}`);
+                if (cityElement.classList.contains('owned')) {
+                    const rent = Math.floor(currentSlot.price * 0.3);
+                    gameState.players[player].money -= rent;
+                    const owner = cityElement.dataset.owner;
+                    gameState.players[owner].money += rent;
+                    showMessage(`${gameState.players[player].nickname} 支付 ${rent} 過路費給${gameState.players[owner].nickname}`);
+                } else {
+                    showBuyCityDialog(player, position, currentSlot);
+                    return;
+                }
+            }
+            
+            checkBankruptcy();
+            if (!gameState.gameFinished) {
+                nextTurn();
+            }
+        }
+        
+        function checkGameEnd() {
+            const finishedCount = gameState.finishOrder.length;
+            const bankruptCount = gameState.bankruptOrder.length;
+            
+            let shouldEnd = false;
+            
+            if (gameState.playerCount === 2) {
+                // 2人遊戲：任一方破產或抵達終點
+                shouldEnd = finishedCount >= 1 || bankruptCount >= 1;
+            } else if (gameState.playerCount === 3) {
+                // 3人遊戲：2方破產或2方抵達終點
+                shouldEnd = finishedCount >= 2 || bankruptCount >= 2;
+            } else if (gameState.playerCount === 4) {
+                // 4人遊戲：3方破產或3方抵達終點
+                shouldEnd = finishedCount >= 3 || bankruptCount >= 3;
+            }
+            
+            if (shouldEnd) {
+                gameState.gameFinished = true;
+                setTimeout(() => showRanking(), 2000);
+            }
+        }
+        
+        function checkBankruptcy() {
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                if (gameState.players[i].money < 0 && gameState.players[i].status === 'playing') {
+                    gameState.players[i].status = 'bankrupt';
+                    gameState.players[i].bankruptTime = Date.now();
+                    gameState.bankruptOrder.push(i);
+                    
+                    showMessage(`💸 ${gameState.players[i].nickname} 破產了！`);
+                    updatePlayerStatus(i, 'bankrupt');
+                    
+                    checkGameEnd();
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        // 顯示排行榜 - 修正版
+        function showRanking() {
+            document.getElementById('gameBoard').style.display = 'none';
+            document.getElementById('rankingScreen').style.display = 'block';
+            
+            // 計算排名
+            const ranking = calculateRanking();
+            const rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = '';
+            
+            ranking.forEach((player, index) => {
+                const rankDiv = document.createElement('div');
+                rankDiv.className = 'ranking-item';
+                
+                let statusText = '';
+                let statusClass = '';
+                
+                if (player.status === 'finished') {
+                    const finishPosition = gameState.finishOrder.indexOf(parseInt(player.id));
+                    statusText = `第${finishPosition + 1}個抵達終點`;
+                    statusClass = 'finished';
+                } else if (player.status === 'bankrupt') {
+                    statusText = '破產';
+                    statusClass = 'bankrupt';
+                } else {
+                    statusText = `第${index + 1}名`;
+                    statusClass = 'playing';
+                }
+                
+                rankDiv.innerHTML = `
+                    <div class="rank-number">${index + 1}</div>
+                    <div class="rank-player">
+                        <div class="rank-avatar" style="background: ${player.avatar.color}">
+                            ${player.avatar.value}
+                        </div>
+                        <div>
+                            <strong>${player.nickname}</strong>
+                            <div style="font-size: 12px; color: #666;">${player.money}</div>
+                        </div>
+                    </div>
+                    <div class="rank-status ${statusClass}">${statusText}</div>
+                `;
+                
+                rankingList.appendChild(rankDiv);
+            });
+        }
+        
+        function calculateRanking() {
+            const players = Object.values(gameState.players).map(player => ({...player, id: Object.keys(gameState.players).find(key => gameState.players[key] === player)}));
+            
+            return players.sort((a, b) => {
+                // 先按完成狀態排序
+                if (a.status === 'finished' && b.status !== 'finished') return -1;
+                if (b.status === 'finished' && a.status !== 'finished') return 1;
+                
+                // 都破產的話，按破產時間排序（越晚破產排名越前）
+                if (a.status === 'bankrupt' && b.status === 'bankrupt') {
+                    return (b.bankruptTime || 0) - (a.bankruptTime || 0);
+                }
+                // 都完成的話，按完成時間排序
+                if (a.status === 'finished' && b.status === 'finished') {
+                    return (a.finishTime || 0) - (b.finishTime || 0);
+                }
+                
+                // 破產的排在最後
+                if (a.status === 'bankrupt' && b.status !== 'bankrupt') return 1;
+                if (b.status === 'bankrupt' && a.status !== 'bankrupt') return -1;
+                
+                // 都在遊戲中的話，按金錢排序
+                return b.money - a.money;
+            });
+        }
+
+        
+        
+        function updatePlayerStatus(playerId, status) {
+            const statusElement = document.getElementById(`player${playerId}Status`);
+            statusElement.className = `player-status ${status}`;
+            
+            if (status === 'finished') {
+                statusElement.textContent = '已完成';
+            } else if (status === 'bankrupt') {
+                statusElement.textContent = '破產';
+            } else {
+                statusElement.textContent = '遊戲中';
+            }
+        }
+        
+        function handleChance(player) {
+            const question = chanceQuestions[Math.floor(Math.random() * chanceQuestions.length)];
+            showQuestionDialog(player, question);
+        }
+        
+        function handleFate(player) {
+            const event = fateEvents[Math.floor(Math.random() * fateEvents.length)];
+            
+            switch (event) {
+                case "倒退2格":
+                case "倒退3格":
+                case "倒退4格":
+                    const steps = parseInt(event.match(/\d+/)[0]);
+                    showMessage(`${gameState.players[player].nickname} ${event}`);
+                    setTimeout(() => movePlayer(player, -steps), 2000);
+                    return;
+                case "扣150元":
+                    gameState.players[player].money -= 150;
+                    showMessage(`${gameState.players[player].nickname} ${event}`);
+                    setTimeout(() => {
+                        checkBankruptcy();
+                        if (!gameState.gameFinished) {
+                            nextTurn();
+                        }
+                    }, 2000);
+                    break;
+                case "增加500元":
+                    gameState.players[player].money += 500;
+                    showMessage(`${gameState.players[player].nickname} ${event}`);
+                    setTimeout(() => {
+                        checkBankruptcy();
+                        if (!gameState.gameFinished) {
+                            nextTurn();
+                        }
+                    }, 2000);
+                    break;
+                case "開始反方向移動":
+                    gameState.clockwise = !gameState.clockwise;
+                    const direction = gameState.clockwise ? "順行（逆時針）" : "逆行（順時針）";
+                    showMessage(`${gameState.players[player].nickname} ${event}！現在改為${direction}`);
+                    setTimeout(() => {
+                        checkBankruptcy();
+                        if (!gameState.gameFinished) {
+                            nextTurn();
+                        }
+                    }, 2000);
+                    break;
+                case "返回起點":
+                    gameState.players[player].position = 0;
+                    updatePlayerPositions();
+                    showMessage(`${gameState.players[player].nickname} ${event}（不獲得金錢）`);
+                    setTimeout(() => {
+                        checkBankruptcy();
+                        if (!gameState.gameFinished) {
+                            nextTurn();
+                        }
+                    }, 2000);
+                    break;
+            }
+        }
+        
+        function showQuestionDialog(player, question) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            const modalButtons = document.getElementById('modalButtons');
+            
+            modalTitle.textContent = '機會題目';
+            modalContent.textContent = question.question;
+            modalButtons.innerHTML = '';
+            
+            if (question.type === 'yesno') {
+                modalContent.textContent = question.statement;
+                const yesBtn = document.createElement('button');
+                yesBtn.className = 'modal-btn';
+                yesBtn.textContent = '是';
+                yesBtn.onclick = () => answerQuestion(player, question, true);
+                
+                const noBtn = document.createElement('button');
+                noBtn.className = 'modal-btn';
+                noBtn.textContent = '否';
+                noBtn.onclick = () => answerQuestion(player, question, false);
+                
+                modalButtons.appendChild(yesBtn);
+                modalButtons.appendChild(noBtn);
+            } else {
+                question.options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'modal-btn';
+                    btn.textContent = option;
+                    btn.onclick = () => answerQuestion(player, question, index);
+                    modalButtons.appendChild(btn);
+                });
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        // 回答問題 - 新增選擇機制
+        function answerQuestion(player, question, answer) {
+            closeModal();
+            
+            let correct = false;
+            if (question.type === 'yesno') {
+                correct = answer === question.correct;
+            } else {
+                correct = answer === question.correct;
+            }
+            
+            if (correct) {
+                playSound('correct');
+                showMessage(`🎉 ${gameState.players[player].nickname} 答對了！請選擇獎勵`);
+                showRewardChoiceDialog(player, question.correctOptions, true);
+            } else {
+                playSound('incorrect');
+                showMessage(`❌ ${gameState.players[player].nickname} 答錯了！請選擇懲罰`);
+                showRewardChoiceDialog(player, question.incorrectOptions, false);
+            }
+        }
+        
+        function showRewardChoiceDialog(player, options, isCorrect) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            const modalButtons = document.getElementById('modalButtons');
+            
+            modalTitle.textContent = isCorrect ? '選擇獎勵' : '選擇懲罰';
+            modalContent.textContent = '請選擇一個選項：';
+            modalButtons.innerHTML = '';
+            
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'modal-btn';
+                btn.textContent = option;
+                btn.onclick = () => applyReward(player, option, isCorrect);
+                modalButtons.appendChild(btn);
+            });
+            
+            modal.style.display = 'block';
+        }
+        
+        function applyReward(player, option, isCorrect) {
+            closeModal();
+            
+            if (isCorrect) {
+                if (option === "獲得$200") {
+                    gameState.players[player].money += 200;
+                    showMessage(`${gameState.players[player].nickname} 獲得$200！`);
+                } else if (option === "再擲一次骰子") {
+                    showMessage(`${gameState.players[player].nickname} 可以再擲一次骰子！`);
+                    // 不換回合，讓同一個玩家再擲一次
+                    gameState.isRolling = false;
+                    document.getElementById('rollDiceBtn').disabled = false;
+                    document.getElementById('rollDiceBtn').textContent = '擲骰子';
+                    return;
+                }
+            } else {
+                if (option === "暫停一次") {
+                    gameState.skipNextTurn = player;
+                    showMessage(`${gameState.players[player].nickname} 下一回合將暫停！`);
+                } else if (option === "扣$200") {
+                    gameState.players[player].money -= 200;
+                    showMessage(`${gameState.players[player].nickname} 被扣除$200！`);
+                }
+            }
+            
+            checkBankruptcy();
+            if (!gameState.gameFinished) {
+                nextTurn();
+            }
+        }
+        
+        function showBuyCityDialog(player, position, city) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            const modalButtons = document.getElementById('modalButtons');
+            
+            modalTitle.textContent = '購買城市';
+            modalContent.innerHTML = `
+                <p>是否要購買 <strong>${city.name}</strong>？</p>
+                <p>價格: ${city.price}</p>
+                <p>過路費: ${Math.floor(city.price * 0.3)}</p>
+                <p>您的金錢: ${gameState.players[player].money}</p>
+            `;
+            modalButtons.innerHTML = '';
+            
+            if (gameState.players[player].money >= city.price) {
+                const buyBtn = document.createElement('button');
+                buyBtn.className = 'modal-btn';
+                buyBtn.textContent = '購買';
+                buyBtn.style.background = 'linear-gradient(45deg, #27ae60, #2ecc71)';
+                buyBtn.onclick = () => buyCity(player, position, city);
+                modalButtons.appendChild(buyBtn);
+            }
+            
+            const skipBtn = document.createElement('button');
+            skipBtn.className = 'modal-btn';
+            skipBtn.textContent = '跳過';
+            skipBtn.style.background = 'linear-gradient(45deg, #e74c3c, #c0392b)';
+            skipBtn.onclick = () => {
+                closeModal();
+                nextTurn();
+            };
+            modalButtons.appendChild(skipBtn);
+            
+            modal.style.display = 'block';
+        }
+        
+        function buyCity(player, position, city) {
+            gameState.players[player].money -= city.price;
+            const cityElement = document.getElementById(`city-${position}`);
+            cityElement.classList.add('owned');
+            cityElement.classList.add(`player${player}`);
+            cityElement.dataset.owner = player;
+            
+            closeModal();
+            showMessage(`${gameState.players[player].nickname} 購買了 ${city.name}！`);
+            nextTurn();
+        }
+        
+        // 下一回合 - 修正暫停機制
+        function nextTurn() {
+            // 跳到下一個仍在遊戲中的玩家
+            do {
+                gameState.currentPlayer = (gameState.currentPlayer % gameState.playerCount) + 1;
+            } while (gameState.players[gameState.currentPlayer].status !== 'playing');
+            
+            // 檢查是否需要跳過這個玩家的回合
+            if (gameState.skipNextTurn === gameState.currentPlayer) {
+                showMessage(`${gameState.players[gameState.currentPlayer].nickname} 暫停一回合！`);
+                gameState.skipNextTurn = null; // 清除暫停標記
+                
+                // 延遲後再跳到下一個玩家
+                setTimeout(() => {
+                    do {
+                        gameState.currentPlayer = (gameState.currentPlayer % gameState.playerCount) + 1;
+                    } while (gameState.players[gameState.currentPlayer].status !== 'playing');
+                    
+                    gameState.isRolling = false;
+                    document.getElementById('rollDiceBtn').disabled = false;
+                    document.getElementById('rollDiceBtn').textContent = '擲骰子';
+                    
+                    // 更新控制區域位置
+                    const controls = document.getElementById('controls');
+                    controls.className = `controls player${gameState.currentPlayer}-turn`;
+                    
+                    updateUI();
+                }, 1500);
+                return;
+            }
+            
+            gameState.isRolling = false;
+            document.getElementById('rollDiceBtn').disabled = false;
+            document.getElementById('rollDiceBtn').textContent = '擲骰子';
+            
+            // 更新控制區域位置
+            const controls = document.getElementById('controls');
+            controls.className = `controls player${gameState.currentPlayer}-turn`;
+            
+            updateUI();
+        }
+        
+        function updateUI() {
+            // 更新所有玩家信息
+            for (let i = 1; i <= gameState.playerCount; i++) {
+                const player = gameState.players[i];
+                
+                document.getElementById(`player${i}Money`).textContent = player.money;
+                document.getElementById(`player${i}Dest`).textContent = player.destination || '未選擇';
+                document.getElementById(`player${i}Pos`).textContent = boardLayout[player.position].name;
+                
+                // 更新當前回合高亮
+                const playerInfoElement = document.getElementById(`playerInfo${i}`);
+                playerInfoElement.classList.toggle('current-turn', i === gameState.currentPlayer);
+            }
+            
+            // 更新當前玩家顯示
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+            document.getElementById('currentPlayerName').innerHTML = `
+                <span style="color: ${currentPlayer.avatar.color}">${currentPlayer.avatar.value}</span>
+                ${currentPlayer.nickname}
+            `;
+        }
+        
+        function showMessage(message) {
+            document.getElementById('gameMessage').textContent = message;
+            setTimeout(() => {
+                document.getElementById('gameMessage').textContent = '';
+            }, 3000);
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+        
+        // 防止點擊模態背景關閉對話框
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                return; // 不執行任何動作
+            }
+        }
+        
+        // 初始化遊戲
+        updateUI();
+    </script>
+    </body>
+</html>
