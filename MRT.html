@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -864,7 +863,7 @@
         // 音效URL
         const soundEffects = {
             correct: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav', // 答對音效
-            incorrect: 'https://www.soundjay.com/misc/sounds/fail-buzzer-02.wav' // 答錯音效
+            incorrect: 'https://github.com/bbellloo/bbellloo.github.io/blob/main/%E7%AD%94%E9%8C%AF%E9%9F%B3%E6%95%88.mp3?raw=true' // 答錯音效
         };
         
         // 播放音效函數
@@ -878,41 +877,65 @@
             }
         }
         
+        // 修正機會題目陣列
         const chanceQuestions = [
             {
-                question: "台灣最高峰是哪一座山？",
-                options: ["玉山", "雪山", "合歡山", "阿里山"],
+                question: "花蓮縣以其壯麗的哪座國家公園聞名，擁有峽谷、斷崖和豐富的生態？",
+                options: ["玉山國家公園", "墾丁國家公園", "太魯閣國家公園", "陽明山國家公園"],
+                correct: 2,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "台灣最高的山峰是哪一座？",
+                options: ["雪山", "南湖大山", "玉山", "奇萊山"],
+                correct: 2,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "台灣哪一個城市被稱為「雨都」，因其多雨的氣候而得名？",
+                options: ["台北市", "基隆市", "宜蘭市", "花蓮市"],
+                correct: 1,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "台灣的特有種魚類，被稱為「櫻花鉤吻鮭」的主要棲息地在？",
+                options: ["濁水溪", "高屏溪", "七家灣溪", "淡水河"],
+                correct: 2,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "世界最高的山峰是哪一座？",
+                options: ["喜馬拉雅山", "聖母峰", "富士山", "阿爾卑斯山"],
+                correct: 1,
+                correctOptions: ["獲得$200", "再擲一次骰子"],
+                incorrectOptions: ["暫停一次", "扣$200"]
+            },
+            {
+                question: "台灣哪個縣市有「全台最長的海岸線」？",
+                options: ["屏東", "花蓮", "澎湖", "宜蘭"],
                 correct: 0,
                 correctOptions: ["獲得$200", "再擲一次骰子"],
                 incorrectOptions: ["暫停一次", "扣$200"]
             },
             {
-                question: "台灣哪個縣市沒有海岸線？",
-                options: ["南投", "嘉義", "苗栗", "新竹"],
-                correct: 0,
+                question: "台灣哪座城市以「科技城」聞名，是半導體產業的重要基地？",
+                options: ["台北", "台中", "新竹", "高雄"],
+                correct: 2,
                 correctOptions: ["獲得$200", "再擲一次骰子"],
                 incorrectOptions: ["暫停一次", "扣$200"]
             },
             {
-                question: "日月潭位於哪個縣市？",
-                type: "yesno",
-                statement: "日月潭位於南投縣",
-                correct: true,
+                question: "台灣著名的阿里山鐵路終點站位於哪個縣市？",
+                options: ["南投", "嘉義", "雲林", "彰化"],
+                correct: 1,
                 correctOptions: ["獲得$200", "再擲一次骰子"],
                 incorrectOptions: ["暫停一次", "扣$200"]
             }
         ];
-        
-        const fateEvents = [
-            "倒退2格",
-            "倒退3格", 
-            "倒退4格",
-            "扣150元",
-            "增加500元",
-            "開始反方向移動",
-            "返回起點"
-        ];
-        
         // 選擇遊戲人數
         function selectPlayerCount(count) {
             gameState.playerCount = count;
@@ -1305,7 +1328,7 @@
             let currentPos = gameState.players[player].position;
             
             for (let i = 0; i < Math.abs(steps); i++) {
-                await sleep(300);
+                await sleep(800);
                 if (steps > 0) {
                     if (gameState.clockwise) {
                         currentPos = (currentPos + 1) % totalCities;
@@ -1345,6 +1368,9 @@
                     gameState.players[player].status = 'finished';
                     gameState.players[player].finishTime = Date.now();
                     gameState.finishOrder.push(player);
+                    
+                    // 更新玩家狀態顯示
+                    updatePlayerStatus(player, 'finished');
                     
                     showMessage(`🎉 ${gameState.players[player].nickname} 抵達目的地 ${currentSlot.name}！獲得 $5000！`);
                     
