@@ -1,4 +1,4 @@
-## 🚂 台灣大富翁 (Taiwan Railway Tycoon)
+## 🚂 台灣大富翁 (Taiwan Tycoon)
 
 ###  遊戲特色
 
